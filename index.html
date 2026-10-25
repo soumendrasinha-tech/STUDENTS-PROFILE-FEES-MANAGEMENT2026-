@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soumendra Sir Biology Classes - Student & Fee Management</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- HTML2PDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#095186',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            teal: {
+              500: '#14b8a6',
+              600: '#0d9488',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            signature: ['Dancing Script', 'cursive']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printArea, #printArea * {
+        visibility: visible;
+      }
+      #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+
+  <!-- TOP HEADER / BRANDING BANNER -->
+  <header class="bg-gradient-to-r from-brand-900 via-brand-800 to-teal-900 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="bg-white/10 p-3 rounded-2xl backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <i class="fa-solid font-bold fa-dna text-3xl text-teal-400"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              Soumendra Sir Biology Classes
+            </h1>
+            <p class="text-xs sm:text-sm text-teal-200 font-medium flex items-center gap-3 mt-1">
+              <span><i class="fa-solid fa-graduation-cap text-teal-400"></i> Excellence in Biology Coaching</span>
+              <span>•</span>
+              <a href="tel:8910587106" class="hover:underline flex items-center gap-1 text-white bg-white/10 px-2 py-0.5 rounded text-xs">
+                <i class="fa-solid fa-phone text-emerald-400"></i> 8910587106
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <button onclick="exportDataBackup()" class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-semibold backdrop-blur border border-white/20 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-download">="download"></i> Backup Data
+          </button>
+          <label class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-xs font-semibold backdrop-blur border border-white/20 transition flex items-center gap-1.5 cursor-pointer">
+            <i class="fa-solid fa-upload"></i> Restore Data
+            <input type="file" id="importFileInput" onchange="importDataBackup(event)" class="hidden" accept=".json">
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="bg-white border-b border-slate-200 sticky top-[73px] z-20 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex space-x-1 sm:space-x-4 overflow-x-auto py-2" id="navTabs">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 transition bg-brand-50 text-brand-700">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </button>
+        <button onclick="switchTab('students')" id="tab-students" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-brand-700 hover:bg-slate-100">
+          <i class="fa-solid fa-user-graduate"></i> Students Management
+        </button>
+        <button onclick="switchTab('fees')" id="tab-fees" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-brand-700 hover:bg-slate-100">
+          <i class="fa-solid fa-receipt"></i> Collect Fee & Receipts
+        </button>
+        <button onclick="switchTab('history')" id="tab-history" class="tab-btn px-4 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-brand-700 hover:bg-slate-100">
+          <i class="fa-solid fa-file-invoice-dollar"></i> Payment History & Ledger
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+    <!-- VIEW 1: DASHBOARD -->
+    <section id="view-dashboard" class="space-y-6">
+      <!-- STAT CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Active Students</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 mt-1" id="stat-total-students">0</h3>
+            <span class="text-xs text-emerald-600 font-medium flex items-center gap-1 mt-1">
+              <i class="fa-solid fa-check-circle"></i> Enrolled
+            </span>
+          </div>
+          <div class="w-12 h-12 bg-blue-50 text-brand-600 rounded-2xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-users"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Revenue Collected</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 mt-1" id="stat-total-fees">₹0</h3>
+            <span class="text-xs text-slate-400 font-medium mt-1 inline-block">Lifetime Collection</span>
+          </div>
+          <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Current Month Fees</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 mt-1" id="stat-month-fees">₹0</h3>
+            <span class="text-xs text-brand-600 font-semibold mt-1 inline-block" id="current-month-label">This Month</span>
+          </div>
+          <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Payments Made</p>
+            <h3 class="text-3xl font-extrabold text-slate-800 mt-1" id="stat-total-receipts">0</h3>
+            <span class="text-xs text-slate-400 font-medium mt-1 inline-block">Receipts Generated</span>
+          </div>
+          <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-xl">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT ACTIVITY & SUMMARY TABLES -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Quick Actions & Distribution -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+          <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-bolt text-amber-500"></i> Quick Actions
+          </h3>
+          <div class="grid grid-cols-1 gap-3">
+            <button onclick="openAddStudentModal()" class="w-full bg-brand-600 hover:bg-brand-700 text-white p-3 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-user-plus"></i> Add New Student
+            </button>
+            <button onclick="switchTab('fees')" class="w-full bg-teal-600 hover:bg-teal-700 text-white p-3 rounded-xl font-medium text-sm transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-hand-holding-dollar"></i> Record Fee Payment
+            </button>
+          </div>
+
+          <div class="border-t border-slate-100 pt-5">
+            <h4 class="text-sm font-bold text-slate-700 mb-3">Institute Information</h4>
+            <ul class="text-xs space-y-2 text-slate-600">
+              <li class="flex justify-between border-b border-slate-50 pb-1">
+                <span class="font-medium text-slate-400">Coaching Name:</span>
+                <span class="font-semibold text-slate-800">Soumendra Sir Biology</span>
+              </li>
+              <li class="flex justify-between border-b border-slate-50 pb-1">
+                <span class="font-medium text-slate-400">Primary Contact:</span>
+                <span class="font-semibold text-slate-800">8910587106</span>
+              </li>
+              <li class="flex justify-between border-b border-slate-50 pb-1">
+                <span class="font-medium text-slate-400">Subject Focus:</span>
+                <span class="font-semibold text-teal-600">Biology (Class 8 - 12 / NEET)</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Recent Fee Transactions -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-brand-600"></i> Recent Fee Transactions
+            </h3>
+            <button onclick="switchTab('history')" class="text-xs text-brand-600 hover:underline font-semibold">View All</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs text-slate-600">
+              <thead class="bg-slate-50 uppercase text-[10px] font-bold text-slate-400 tracking-wider">
+                <tr>
+                  <th class="p-3 rounded-l-lg">Receipt #</th>
+                  <th class="p-3">Student</th>
+                  <th class="p-3">Month/Period</th>
+                  <th class="p-3">Amount</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3 text-right rounded-r-lg">Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-payments-tbody" class="divide-y divide-slate-100">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: STUDENTS MANAGEMENT -->
+    <section id="view-students" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <!-- Controls Header -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-800">Student Profiles & Database</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Manage records, search, filter, and export student profiles.</p>
+          </div>
+          <button onclick="openAddStudentModal()" class="w-full md:w-auto bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-plus"></i> Add New Student
+          </button>
+        </div>
+
+        <!-- Search & Filter Bar -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 bg-slate-50 p-3 rounded-xl">
+          <div class="relative">
+            <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="searchStudentInput" oninput="renderStudents()" placeholder="Search by name, school, parent..." class="w-full pl-9 pr-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+          </div>
+          <div>
+            <select id="filterClassSelect" onchange="renderStudents()" class="w-full py-2 px-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+              <option value="">All Classes</option>
+              <option value="Class 8">Class 8</option>
+              <option value="Class 9">Class 9</option>
+              <option value="Class 10">Class 10</option>
+              <option value="Class 11">Class 11</option>
+              <option value="Class 12">Class 12</option>
+              <option value="NEET Prep">NEET Prep</option>
+            </select>
+          </div>
+          <div>
+            <select id="filterBoardSelect" onchange="renderStudents()" class="w-full py-2 px-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+              <option value="">All Boards</option>
+              <option value="CBSE">CBSE</option>
+              <option value="ICSE / ISC">ICSE / ISC</option>
+              <option value="WBCHSE (West Bengal)">WBCHSE (West Bengal)</option>
+              <option value="Other Board">Other Board</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Students Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-100 text-slate-500 uppercase font-bold text-[10px] tracking-wider">
+              <tr>
+                <th class="p-3 rounded-l-lg">Student Info</th>
+                <th class="p-3">Class & Board</th>
+                <th class="p-3">School Name</th>
+                <th class="p-3">Parents & Contact</th>
+                <th class="p-3">Blood Group</th>
+                <th class="p-3 text-right rounded-r-lg">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: FEE PAYMENT & RECEIPT GENERATOR -->
+    <section id="view-fees" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left: Payment Form -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+          <div class="border-b border-slate-100 pb-3">
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-money-check-dollar text-brand-600"></i> Record Fee Payment
+            </h2>
+            <p class="text-xs text-slate-500">Generate monthly receipts instantly.</p>
+          </div>
+
+          <form id="feePaymentForm" onsubmit="handleSavePayment(event)" class="space-y-4 text-xs">
+            <input type="hidden" id="feePaymentEditId">
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Select Student *</label>
+              <select id="feeStudentSelect" required onchange="autoFillFeeDetails()" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 bg-slate-50">
+                <option value="">-- Choose Student --</option>
+              </select>
+            </div>
+
+            <!-- Auto-populated Info badge -->
+            <div id="studentInfoBadge" class="hidden p-3 bg-brand-50 border border-brand-100 rounded-xl text-brand-900 space-y-1">
+              <p class="font-bold" id="badgeStudentName">-</p>
+              <p class="text-[11px] text-brand-700" id="badgeStudentSub">-</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">For Month/Year *</label>
+                <input type="month" id="feeMonth" required class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Payment Date *</label>
+                <input type="date" id="feeDate" required class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Amount Paid (₹) *</label>
+                <input type="number" id="feeAmount" min="0" required placeholder="e.g. 1500" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 font-bold text-slate-800">
+              </div>
+              <div>
+                <label class="block font-semibold text-slate-700 mb-1">Payment Method</label>
+                <select id="feeMethod" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+                  <option value="Cash">Cash</option>
+                  <option value="UPI / GPay / PhonePe">UPI / GPay / PhonePe</option>
+                  <option value="Bank Transfer / Net Banking">Bank Transfer / Net Banking</option>
+                  <option value="Cheque / Card">Cheque / Card</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 mb-1">Remarks / Note</label>
+              <input type="text" id="feeRemarks" placeholder="Optional notes (e.g. Tuition Fee for March)" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+            </div>
+
+            <div class="pt-2 flex gap-2">
+              <button type="submit" class="flex-1 bg-brand-600 hover:bg-brand-700 text-white p-3 rounded-xl font-bold transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-invoice"></i> Save & Generate Receipt
+              </button>
+              <button type="button" onclick="resetFeeForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 rounded-xl font-semibold">
+                Reset
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right: Live Receipt Preview Card -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-eye text-teal-600"></i> Live Receipt Preview
+            </h3>
+            <div class="flex gap-2">
+              <button onclick="downloadReceiptPDF()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+              </button>
+              <button onclick="downloadReceiptWord()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-file-word"></i> Word (.doc)
+              </button>
+              <button onclick="printReceipt()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-print"></i> Print
+              </button>
+            </div>
+          </div>
+
+          <!-- RECEIPT CONTAINER FOR PDF EXPORT & PRINT -->
+          <div class="bg-white border-2 border-slate-200 p-6 rounded-2xl shadow-inner my-auto" id="printableReceiptCard">
+            <!-- Receipt Header -->
+            <div class="border-b-2 border-brand-600 pb-4 mb-4 text-center">
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OFFICIAL FEE RECEIPT</span>
+                <span class="text-xs font-extrabold text-brand-700 bg-brand-50 px-2 py-0.5 rounded" id="previewReceiptNo">RECEIPT #---</span>
+              </div>
+              <h2 class="text-2xl font-black text-brand-900 tracking-tight">SOUMENDRA SIR BIOLOGY CLASSES</h2>
+              <p class="text-xs text-slate-600 font-semibold mt-1">Specialized Tuition & Coaching for Class VIII - XII & NEET</p>
+              <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-phone text-emerald-600"></i> Contact: <strong>8910587106</strong></p>
+            </div>
+
+            <!-- Receipt Meta Info -->
+            <div class="grid grid-cols-2 gap-4 text-xs mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <div>
+                <p class="text-slate-400 text-[10px] uppercase font-bold">Student Details</p>
+                <p class="font-bold text-slate-800 text-sm mt-0.5" id="previewStudentName">Select a student</p>
+                <p class="text-slate-600" id="previewStudentClass">Class: -- | Board: --</p>
+                <p class="text-slate-600" id="previewStudentSchool">School: --</p>
+              </div>
+              <div class="text-right">
+                <p class="text-slate-400 text-[10px] uppercase font-bold">Payment Meta</p>
+                <p class="font-semibold text-slate-700 mt-0.5">Date: <span id="previewPaymentDate">--/--/----</span></p>
+                <p class="font-semibold text-slate-700">Period: <span id="previewPaymentMonth" class="text-brand-600 font-bold">--</span></p>
+                <p class="font-semibold text-slate-700">Mode: <span id="previewPaymentMode">--</span></p>
+              </div>
+            </div>
+
+            <!-- Payment Breakdown Table -->
+            <table class="w-full text-xs text-left mb-4 border border-slate-200 rounded-lg overflow-hidden">
+              <thead class="bg-slate-100 text-slate-600 font-bold">
+                <tr>
+                  <th class="p-2 border-b">Description</th>
+                  <th class="p-2 border-b text-right">Amount (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="p-2 border-b font-medium" id="previewDescription">Biology Tuition Fees</td>
+                  <td class="p-2 border-b text-right font-bold text-slate-800" id="previewAmount">₹0.00</td>
+                </tr>
+              </tbody>
+              <tfoot class="bg-brand-50 font-bold text-slate-800">
+                <tr>
+                  <td class="p-2 text-right">Total Received:</td>
+                  <td class="p-2 text-right text-brand-700 text-sm" id="previewTotal">₹0.00</td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Historical Summary Preview -->
+            <div class="text-[11px] text-slate-500 border-t border-slate-100 pt-3 mb-6">
+              <span class="font-bold text-slate-600">Cumulative Ledger:</span> Total fees collected for this student so far: <strong class="text-slate-800" id="previewStudentLedgerTotal">₹0</strong>
+            </div>
+
+            <!-- Footer & Signature Seal -->
+            <div class="flex justify-between items-end border-t border-slate-200 pt-4">
+              <div class="text-[10px] text-slate-400 max-w-[200px]">
+                <p class="italic">This is a computer generated receipt. Thank you for your payment!</p>
+              </div>
+
+              <!-- Digitally Generated Signature -->
+              <div class="text-center">
+                <div class="inline-block relative">
+                  <span class="font-signature text-2xl text-brand-900 block select-none">Soumendra Sir</span>
+                  <div class="text-[9px] font-bold text-teal-700 uppercase tracking-wider border-t border-brand-300 pt-0.5">
+                    Authorized Signatory
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: PAYMENT HISTORY & LEDGER -->
+    <section id="view-history" class="hidden space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-800">Fee Payment History & Ledger</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Complete record of all fee receipts issued.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="exportHistoryCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+              <i class="fa-solid fa-file-csv"></i> Export Table (CSV)
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl">
+          <input type="text" id="historySearch" oninput="renderHistoryTable()" placeholder="Search by student or receipt..." class="w-full py-2 px-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+          <input type="month" id="historyMonthFilter" onchange="renderHistoryTable()" class="w-full py-2 px-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+          <select id="historyMethodFilter" onchange="renderHistoryTable()" class="w-full py-2 px-3 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+            <option value="">All Payment Methods</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI / GPay / PhonePe">UPI / GPay / PhonePe</option>
+            <option value="Bank Transfer / Net Banking">Bank Transfer / Net Banking</option>
+          </select>
+        </div>
+
+        <!-- History Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-100 text-slate-500 uppercase font-bold text-[10px] tracking-wider">
+              <tr>
+                <th class="p-3 rounded-l-lg">Receipt #</th>
+                <th class="p-3">Date</th>
+                <th class="p-3">Student Name</th>
+                <th class="p-3">Class</th>
+                <th class="p-3">Fee Month</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Method</th>
+                <th class="p-3 text-right rounded-r-lg">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL: ADD / EDIT STUDENT -->
+  <div id="studentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all">
+      <div class="bg-gradient-to-r from-brand-800 to-teal-800 px-6 py-4 text-white flex items-center justify-between">
+        <h3 class="font-extrabold text-lg flex items-center gap-2" id="studentModalTitle">
+          <i class="fa-solid fa-user-plus"></i> Add New Student
+        </h3>
+        <button onclick="closeStudentModal()" class="text-white/80 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="studentForm" onsubmit="handleSaveStudent(event)" class="p-6 space-y-4 text-xs">
+        <input type="hidden" id="studentEditId">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Full Name of Student *</label>
+            <input type="text" id="stdName" required placeholder="e.g. Rahul Sharma" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Class / Grade *</label>
+            <select id="stdClass" required class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+              <option value="">-- Select Class --</option>
+              <option value="Class 8">Class 8</option>
+              <option value="Class 9">Class 9</option>
+              <option value="Class 10">Class 10</option>
+              <option value="Class 11">Class 11</option>
+              <option value="Class 12">Class 12</option>
+              <option value="NEET Prep">NEET Prep</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">School Name *</label>
+            <input type="text" id="stdSchool" required placeholder="e.g. St. Xavier's High School" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Education Board *</label>
+            <select id="stdBoard" required class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+              <option value="">-- Select Board --</option>
+              <option value="CBSE">CBSE</option>
+              <option value="ICSE / ISC">ICSE / ISC</option>
+              <option value="WBCHSE (West Bengal)">WBCHSE (West Bengal)</option>
+              <option value="Other Board">Other Board</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Parents' / Guardian's Name *</label>
+            <input type="text" id="stdParents" required placeholder="e.g. Mr. & Mrs. Sharma" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Parents' Contact Number *</label>
+            <input type="tel" id="stdContact" required placeholder="e.g. 9830000000" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Blood Group</label>
+            <select id="stdBloodGroup" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+              <option value="Unknown">Unknown / Not specified</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Full Home Address</label>
+            <input type="text" id="stdAddress" placeholder="e.g. 12/B MG Road, Flat 3A" class="w-full p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end gap-3">
+          <button type="button" onclick="closeStudentModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW STUDENT PROFILE CARD -->
+  <div id="profileModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden">
+      <div class="bg-brand-900 text-white p-4 flex justify-between items-center">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i class="fa-solid fa-id-card"></i> Student Profile Card
+        </h3>
+        <button onclick="closeProfileModal()" class="text-slate-300 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4" id="profileCardExportArea">
+        <div class="border-b-2 border-brand-500 pb-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <h2 class="text-xl font-bold text-slate-900" id="profName">-</h2>
+              <p class="text-xs font-semibold text-brand-600" id="profClassBoard">-</p>
+            </div>
+            <span class="bg-red-50 text-red-700 border border-red-200 font-bold px-3 py-1 rounded-full text-xs" id="profBlood">
+              O+
+            </span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-xs">
+          <div>
+            <p class="text-slate-400 font-bold uppercase text-[10px]">School</p>
+            <p class="font-semibold text-slate-800" id="profSchool">-</p>
+          </div>
+          <div>
+            <p class="text-slate-400 font-bold uppercase text-[10px]">Parents' Name</p>
+            <p class="font-semibold text-slate-800" id="profParents">-</p>
+          </div>
+          <div>
+            <p class="text-slate-400 font-bold uppercase text-[10px]">Parents' Contact</p>
+            <p class="font-semibold text-slate-800" id="profContact">-</p>
+          </div>
+          <div>
+            <p class="text-slate-400 font-bold uppercase text-[10px]">Coaching Institute</p>
+            <p class="font-semibold text-slate-800">Soumendra Sir Biology Classes</p>
+          </div>
+          <div class="col-span-2">
+            <p class="text-slate-400 font-bold uppercase text-[10px]">Home Address</p>
+            <p class="font-semibold text-slate-800" id="profAddress">-</p>
+          </div>
+        </div>
+
+        <div class="border-t border-slate-100 pt-3 text-xs bg-slate-50 p-3 rounded-xl">
+          <p class="font-bold text-slate-700">Fee Payment Summary</p>
+          <div class="flex justify-between mt-1 text-slate-600">
+            <span>Total Fees Paid:</span>
+            <strong class="text-emerald-600" id="profTotalPaid">₹0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 p-4 flex justify-end gap-3 border-t border-slate-100">
+        <button onclick="downloadStudentProfilePDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </button>
+        <button onclick="downloadStudentProfileWord()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-file-word"></i> Download Word
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-xs">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base" id="toastIcon"></i>
+    <span id="toastMsg">Action completed successfully!</span>
+  </div>
+
+  <!-- APPLICATION LOGIC JS -->
+  <script>
+    // INITIALIZATION & STATE
+    const DB_STUDENTS_KEY = 'SSBC_STUDENTS_DATA_v1';
+    const DB_FEES_KEY = 'SSBC_FEES_DATA_v1';
+
+    let students = [];
+    let fees = [];
+    let currentSelectedStudentForProfile = null;
+
+    window.onload = function() {
+      loadData();
+      renderDashboard();
+      renderStudents();
+      renderFeeStudentDropdown();
+      renderHistoryTable();
+      setDefaultDates();
+    };
+
+    function setDefaultDates() {
+      const today = new Date().toISOString().split('T')[0];
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      document.getElementById('feeDate').value = today;
+      document.getElementById('feeMonth').value = currentMonth;
+    }
+
+    // LOCAL STORAGE MANAGEMENT
+    function loadData() {
+      const storedStudents = localStorage.getItem(DB_STUDENTS_KEY);
+      const storedFees = localStorage.getItem(DB_FEES_KEY);
+
+      if (storedStudents) {
+        students = JSON.parse(storedStudents);
+      } else {
+        // Seed initial sample data if empty
+        students = [
+          {
+            id: 'std_1',
+            name: 'Anish Ray',
+            school: 'South Point High School',
+            board: 'CBSE',
+            parents: 'Subhash Ray',
+            address: '45 Lake Gardens, Kolkata',
+            blood: 'A+',
+            contact: '9831000000',
+            classGrade: 'Class 11'
+          },
+          {
+            id: 'std_2',
+            name: 'Priya Mukherjee',
+            school: 'Ballygunge High School',
+            board: 'WBCHSE (West Bengal)',
+            parents: 'Tarak Mukherjee',
+            address: '12 Southern Avenue, Kolkata',
+            blood: 'O+',
+            contact: '9832111111',
+            classGrade: 'Class 12'
+          }
+        ];
+        saveStudentsData();
+      }
+
+      if (storedFees) {
+        fees = JSON.parse(storedFees);
+      } else {
+        fees = [
+          {
+            id: 'rcpt_1001',
+            studentId: 'std_1',
+            monthYear: '2026-03',
+            paymentDate: '2026-03-05',
+            amount: 1500,
+            method: 'UPI / GPay / PhonePe',
+            remarks: 'March Tuition Fee'
+          }
+        ];
+        saveFeesData();
+      }
+    }
+
+    function saveStudentsData() {
+      localStorage.setItem(DB_STUDENTS_KEY, JSON.stringify(students));
+    }
+
+    function saveFeesData() {
+      localStorage.setItem(DB_FEES_KEY, JSON.stringify(fees));
+    }
+
+    // TAB SWITCHING
+    function switchTab(tabName) {
+      document.querySelectorAll('section[id^="view-"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`view-${tabName}`).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-50', 'text-brand-700');
+        btn.classList.add('text-slate-600');
+      });
+
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.add('bg-brand-50', 'text-brand-700');
+      activeBtn.classList.remove('text-slate-600');
+
+      if (tabName === 'dashboard') renderDashboard();
+      if (tabName === 'students') renderStudents();
+      if (tabName === 'fees') renderFeeStudentDropdown();
+      if (tabName === 'history') renderHistoryTable();
+    }
+
+    // DASHBOARD RENDERING
+    function renderDashboard() {
+      document.getElementById('stat-total-students').innerText = students.length;
+
+      const totalRevenue = fees.reduce((sum, f) => sum + Number(f.amount || 0), 0);
+      document.getElementById('stat-total-fees').innerText = '₹' + totalRevenue.toLocaleString('en-IN');
+
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const currentMonthTotal = fees
+        .filter(f => f.monthYear === currentMonth)
+        .reduce((sum, f) => sum + Number(f.amount || 0), 0);
+      document.getElementById('stat-month-fees').innerText = '₹' + currentMonthTotal.toLocaleString('en-IN');
+
+      document.getElementById('stat-total-receipts').innerText = fees.length;
+
+      // Render Recent Transactions
+      const recentTbody = document.getElementById('recent-payments-tbody');
+      recentTbody.innerHTML = '';
+
+      const recentFees = [...fees].reverse().slice(0, 5);
+      if (recentFees.length === 0) {
+        recentTbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">No payment records found.</td></tr>`;
+        return;
+      }
+
+      recentFees.forEach(fee => {
+        const student = students.find(s => s.id === fee.studentId) || { name: 'Unknown Student' };
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-brand-700">${fee.id}</td>
+          <td class="p-3 font-semibold text-slate-800">${escapeHtml(student.name)}</td>
+          <td class="p-3">${fee.monthYear}</td>
+          <td class="p-3 font-bold text-emerald-600">₹${Number(fee.amount).toLocaleString('en-IN')}</td>
+          <td class="p-3">${fee.paymentDate}</td>
+          <td class="p-3 text-right">
+            <button onclick="previewFeeReceipt('${fee.id}')" class="text-brand-600 hover:underline font-semibold text-xs">View Receipt</button>
+          </td>
+        `;
+        recentTbody.appendChild(tr);
+      });
+    }
+
+    // STUDENT MANAGEMENT FUNCTIONS
+    function renderStudents() {
+      const tbody = document.getElementById('students-tbody');
+      tbody.innerHTML = '';
+
+      const search = document.getElementById('searchStudentInput').value.toLowerCase();
+      const classFilter = document.getElementById('filterClassSelect').value;
+      const boardFilter = document.getElementById('filterBoardSelect').value;
+
+      const filtered = students.filter(s => {
+        const matchesSearch = s.name.toLowerCase().includes(search) || 
+                              s.school.toLowerCase().includes(search) || 
+                              s.parents.toLowerCase().includes(search) ||
+                              s.contact.includes(search);
+        const matchesClass = !classFilter || s.classGrade === classFilter;
+        const matchesBoard = !boardFilter || s.board === boardFilter;
+
+        return matchesSearch && matchesClass && matchesBoard;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">No matching student records found.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-3">
+            <p class="font-bold text-slate-800 text-sm">${escapeHtml(s.name)}</p>
+            <p class="text-[11px] text-slate-400">${escapeHtml(s.address || 'No Address')}</p>
+          </td>
+          <td class="p-3">
+            <span class="bg-brand-50 text-brand-700 px-2 py-0.5 rounded font-semibold text-[11px]">${escapeHtml(s.classGrade)}</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">${escapeHtml(s.board)}</p>
+          </td>
+          <td class="p-3 font-medium text-slate-700">${escapeHtml(s.school)}</td>
+          <td class="p-3">
+            <p class="font-semibold text-slate-800">${escapeHtml(s.parents)}</p>
+            <p class="text-emerald-600 font-bold"><i class="fa-solid fa-phone text-[10px]"></i> ${escapeHtml(s.contact)}</p>
+          </td>
+          <td class="p-3">
+            <span class="bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded text-[11px] border border-red-100">${escapeHtml(s.blood || 'N/A')}</span>
+          </td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="viewStudentProfile('${s.id}')" title="View Profile Card" class="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><i class="fa-solid fa-id-card"></i></button>
+            <button onclick="openEditStudentModal('${s.id}')" title="Edit Student" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="deleteStudent('${s.id}')" title="Delete Student" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openAddStudentModal() {
+      document.getElementById('studentForm').reset();
+      document.getElementById('studentEditId').value = '';
+      document.getElementById('studentModalTitle').innerHTML = `<i class="fa-solid fa-user-plus"></i> Add New Student`;
+      document.getElementById('studentModal').classList.remove('hidden');
+    }
+
+    function openEditStudentModal(id) {
+      const s = students.find(item => item.id === id);
+      if (!s) return;
+
+      document.getElementById('studentEditId').value = s.id;
+      document.getElementById('stdName').value = s.name;
+      document.getElementById('stdClass').value = s.classGrade;
+      document.getElementById('stdSchool').value = s.school;
+      document.getElementById('stdBoard').value = s.board;
+      document.getElementById('stdParents').value = s.parents;
+      document.getElementById('stdContact').value = s.contact;
+      document.getElementById('stdBloodGroup').value = s.blood || 'Unknown';
+      document.getElementById('stdAddress').value = s.address || '';
+
+      document.getElementById('studentModalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Student Details`;
+      document.getElementById('studentModal').classList.remove('hidden');
+    }
+
+    function closeStudentModal() {
+      document.getElementById('studentModal').classList.add('hidden');
+    }
+
+    function handleSaveStudent(e) {
+      e.preventDefault();
+      const editId = document.getElementById('studentEditId').value;
+
+      const studentObj = {
+        id: editId || 'std_' + Date.now(),
+        name: document.getElementById('stdName').value.trim(),
+        classGrade: document.getElementById('stdClass').value,
+        school: document.getElementById('stdSchool').value.trim(),
+        board: document.getElementById('stdBoard').value,
+        parents: document.getElementById('stdParents').value.trim(),
+        contact: document.getElementById('stdContact').value.trim(),
+        blood: document.getElementById('stdBloodGroup').value,
+        address: document.getElementById('stdAddress').value.trim()
+      };
+
+      if (editId) {
+        const idx = students.findIndex(s => s.id === editId);
+        if (idx !== -1) students[idx] = studentObj;
+        showToast('Student updated successfully!');
+      } else {
+        students.push(studentObj);
+        showToast('New student added successfully!');
+      }
+
+      saveStudentsData();
+      closeStudentModal();
+      renderStudents();
+      renderFeeStudentDropdown();
+    }
+
+    function deleteStudent(id) {
+      if (confirm('Are you sure you want to delete this student record? Associated fees will remain in records.')) {
+        students = students.filter(s => s.id !== id);
+        saveStudentsData();
+        renderStudents();
+        renderFeeStudentDropdown();
+        showToast('Student deleted.');
+      }
+    }
+
+    // STUDENT PROFILE VIEW & EXPORT
+    function viewStudentProfile(id) {
+      const s = students.find(item => item.id === id);
+      if (!s) return;
+
+      currentSelectedStudentForProfile = s;
+
+      document.getElementById('profName').innerText = s.name;
+      document.getElementById('profClassBoard').innerText = `${s.classGrade} | ${s.board}`;
+      document.getElementById('profSchool').innerText = s.school;
+      document.getElementById('profParents').innerText = s.parents;
+      document.getElementById('profContact').innerText = s.contact;
+      document.getElementById('profBlood').innerText = s.blood || 'N/A';
+      document.getElementById('profAddress').innerText = s.address || 'N/A';
+
+      const totalPaid = fees
+        .filter(f => f.studentId === s.id)
+        .reduce((sum, f) => sum + Number(f.amount || 0), 0);
+      document.getElementById('profTotalPaid').innerText = '₹' + totalPaid.toLocaleString('en-IN');
+
+      document.getElementById('profileModal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.add('hidden');
+    }
+
+    function downloadStudentProfilePDF() {
+      if (!currentSelectedStudentForProfile) return;
+      const element = document.getElementById('profileCardExportArea');
+      const opt = {
+        margin:       10,
+        filename:     `Student_Profile_${currentSelectedStudentForProfile.name.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a5', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function downloadStudentProfileWord() {
+      if (!currentSelectedStudentForProfile) return;
+      const s = currentSelectedStudentForProfile;
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><title>Student Profile</title><style>body{font-family:Arial,sans-serif;}</style></head>
+        <body>
+          <h2>Soumendra Sir Biology Classes - Student Profile</h2>
+          <hr/>
+          <p><strong>Full Name:</strong> ${s.name}</p>
+          <p><strong>Class:</strong> ${s.classGrade}</p>
+          <p><strong>Education Board:</strong> ${s.board}</p>
+          <p><strong>School:</strong> ${s.school}</p>
+          <p><strong>Parents' Name:</strong> ${s.parents}</p>
+          <p><strong>Contact Number:</strong> ${s.contact}</p>
+          <p><strong>Blood Group:</strong> ${s.blood || 'N/A'}</p>
+          <p><strong>Address:</strong> ${s.address || 'N/A'}</p>
+        </body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Student_Profile_${s.name.replace(/\s+/g, '_')}.doc`;
+      a.click();
+    }
+
+    // FEE PAYMENT & RECEIPT FUNCTIONS
+    function renderFeeStudentDropdown() {
+      const select = document.getElementById('feeStudentSelect');
+      select.innerHTML = '<option value="">-- Choose Student --</option>';
+
+      students.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.innerText = `${s.name} (${s.classGrade} - ${s.school})`;
+        select.appendChild(opt);
+      });
+    }
+
+    function autoFillFeeDetails() {
+      const studentId = document.getElementById('feeStudentSelect').value;
+      const badge = document.getElementById('studentInfoBadge');
+
+      if (!studentId) {
+        badge.classList.add('hidden');
+        updateLiveReceiptPreview(null, null);
+        return;
+      }
+
+      const s = students.find(item => item.id === studentId);
+      if (s) {
+        document.getElementById('badgeStudentName').innerText = s.name;
+        document.getElementById('badgeStudentSub').innerText = `${s.classGrade} • ${s.board} • ${s.school}`;
+        badge.classList.remove('hidden');
+
+        updateLiveReceiptPreview(s, {
+          id: document.getElementById('feePaymentEditId').value || 'rcpt_' + Math.floor(1000 + Math.random() * 9000),
+          monthYear: document.getElementById('feeMonth').value,
+          paymentDate: document.getElementById('feeDate').value,
+          amount: document.getElementById('feeAmount').value || 0,
+          method: document.getElementById('feeMethod').value,
+          remarks: document.getElementById('feeRemarks').value
+        });
+      }
+    }
+
+    function updateLiveReceiptPreview(student, feeObj) {
+      if (!student || !feeObj) {
+        document.getElementById('previewReceiptNo').innerText = 'RECEIPT #---';
+        document.getElementById('previewStudentName').innerText = 'Select a student';
+        document.getElementById('previewStudentClass').innerText = 'Class: -- | Board: --';
+        document.getElementById('previewStudentSchool').innerText = 'School: --';
+        document.getElementById('previewPaymentDate').innerText = '--/--/----';
+        document.getElementById('previewPaymentMonth').innerText = '--';
+        document.getElementById('previewPaymentMode').innerText = '--';
+        document.getElementById('previewAmount').innerText = '₹0.00';
+        document.getElementById('previewTotal').innerText = '₹0.00';
+        document.getElementById('previewStudentLedgerTotal').innerText = '₹0';
+        return;
+      }
+
+      document.getElementById('previewReceiptNo').innerText = `RECEIPT #${feeObj.id}`;
+      document.getElementById('previewStudentName').innerText = student.name;
+      document.getElementById('previewStudentClass').innerText = `Class: ${student.classGrade} | Board: ${student.board}`;
+      document.getElementById('previewStudentSchool').innerText = `School: ${student.school}`;
+      document.getElementById('previewPaymentDate').innerText = feeObj.paymentDate;
+      document.getElementById('previewPaymentMonth').innerText = feeObj.monthYear;
+      document.getElementById('previewPaymentMode').innerText = feeObj.method;
+      document.getElementById('previewDescription').innerText = feeObj.remarks ? `Biology Coaching Fee (${feeObj.remarks})` : `Biology Tuition Fee for ${feeObj.monthYear}`;
+      
+      const amt = Number(feeObj.amount || 0);
+      document.getElementById('previewAmount').innerText = '₹' + amt.toLocaleString('en-IN');
+      document.getElementById('previewTotal').innerText = '₹' + amt.toLocaleString('en-IN');
+
+      const currentLedger = fees
+        .filter(f => f.studentId === student.id)
+        .reduce((sum, f) => sum + Number(f.amount || 0), 0) + (feeObj.id && !fees.some(f=>f.id===feeObj.id) ? amt : 0);
+      document.getElementById('previewStudentLedgerTotal').innerText = '₹' + currentLedger.toLocaleString('en-IN');
+    }
+
+    // Attach listeners for dynamic input on live preview
+    ['feeMonth', 'feeDate', 'feeAmount', 'feeMethod', 'feeRemarks'].forEach(id => {
+      document.getElementById(id).addEventListener('input', autoFillFeeDetails);
+    });
+
+    function handleSavePayment(e) {
+      e.preventDefault();
+      const studentId = document.getElementById('feeStudentSelect').value;
+      if (!studentId) return alert('Please select a student.');
+
+      const editId = document.getElementById('feePaymentEditId').value;
+      const feeObj = {
+        id: editId || 'rcpt_' + Math.floor(1000 + Math.random() * 9000),
+        studentId: studentId,
+        monthYear: document.getElementById('feeMonth').value,
+        paymentDate: document.getElementById('feeDate').value,
+        amount: Number(document.getElementById('feeAmount').value),
+        method: document.getElementById('feeMethod').value,
+        remarks: document.getElementById('feeRemarks').value.trim()
+      };
+
+      if (editId) {
+        const idx = fees.findIndex(f => f.id === editId);
+        if (idx !== -1) fees[idx] = feeObj;
+        showToast('Fee Receipt updated successfully!');
+      } else {
+        fees.push(feeObj);
+        showToast('Fee Payment recorded & Receipt generated!');
+      }
+
+      saveFeesData();
+      renderDashboard();
+      renderHistoryTable();
+      autoFillFeeDetails();
+    }
+
+    function resetFeeForm() {
+      document.getElementById('feePaymentForm').reset();
+      document.getElementById('feePaymentEditId').value = '';
+      setDefaultDates();
+      autoFillFeeDetails();
+    }
+
+    function previewFeeReceipt(receiptId) {
+      switchTab('fees');
+      const feeObj = fees.find(f => f.id === receiptId);
+      if (!feeObj) return;
+
+      document.getElementById('feePaymentEditId').value = feeObj.id;
+      document.getElementById('feeStudentSelect').value = feeObj.studentId;
+      document.getElementById('feeMonth').value = feeObj.monthYear;
+      document.getElementById('feeDate').value = feeObj.paymentDate;
+      document.getElementById('feeAmount').value = feeObj.amount;
+      document.getElementById('feeMethod').value = feeObj.method;
+      document.getElementById('feeRemarks').value = feeObj.remarks || '';
+
+      autoFillFeeDetails();
+    }
+
+    function downloadReceiptPDF() {
+      const element = document.getElementById('printableReceiptCard');
+      const receiptNo = document.getElementById('previewReceiptNo').innerText;
+      const opt = {
+        margin:       8,
+        filename:     `Fee_${receiptNo.replace('#', '')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a5', orientation: 'landscape' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function downloadReceiptWord() {
+      const element = document.getElementById('printableReceiptCard').innerHTML;
+      const receiptNo = document.getElementById('previewReceiptNo').innerText;
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><title>Fee Receipt</title><style>body{font-family:Arial,sans-serif;}</style></head>
+        <body>${element}</body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Fee_${receiptNo.replace('#', '')}.doc`;
+      a.click();
+    }
+
+    function printReceipt() {
+      window.print();
+    }
+
+    // PAYMENT HISTORY & LEDGER TABLE
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-tbody');
+      tbody.innerHTML = '';
+
+      const search = document.getElementById('historySearch').value.toLowerCase();
+      const monthFilter = document.getElementById('historyMonthFilter').value;
+      const methodFilter = document.getElementById('historyMethodFilter').value;
+
+      const filtered = fees.filter(f => {
+        const student = students.find(s => s.id === f.studentId) || { name: '' };
+        const matchesSearch = student.name.toLowerCase().includes(search) || f.id.toLowerCase().includes(search);
+        const matchesMonth = !monthFilter || f.monthYear === monthFilter;
+        const matchesMethod = !methodFilter || f.method === methodFilter;
+
+        return matchesSearch && matchesMonth && matchesMethod;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-slate-400">No payment records found matching criteria.</td></tr>`;
+        return;
+      }
+
+      [...filtered].reverse().forEach(f => {
+        const student = students.find(s => s.id === f.studentId) || { name: 'Deleted Student', classGrade: '-' };
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-brand-700">${f.id}</td>
+          <td class="p-3">${f.paymentDate}</td>
+          <td class="p-3 font-semibold text-slate-800">${escapeHtml(student.name)}</td>
+          <td class="p-3"><span class="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold">${escapeHtml(student.classGrade)}</span></td>
+          <td class="p-3 font-semibold text-brand-600">${f.monthYear}</td>
+          <td class="p-3 font-bold text-emerald-600">₹${Number(f.amount).toLocaleString('en-IN')}</td>
+          <td class="p-3 text-slate-500">${f.method}</td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="previewFeeReceipt('${f.id}')" title="Edit/View Receipt" class="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg"><i class="fa-solid fa-receipt"></i></button>
+            <button onclick="deleteFeeRecord('${f.id}')" title="Delete Payment Record" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteFeeRecord(receiptId) {
+      if (confirm('Are you sure you want to delete this payment receipt record?')) {
+        fees = fees.filter(f => f.id !== receiptId);
+        saveFeesData();
+        renderDashboard();
+        renderHistoryTable();
+        showToast('Receipt deleted.');
+      }
+    }
+
+    function exportHistoryCSV() {
+      if (fees.length === 0) return alert('No history to export.');
+
+      let csv = 'Receipt ID,Date,Student Name,Class,Month,Amount,Payment Method,Remarks\n';
+      fees.forEach(f => {
+        const s = students.find(item => item.id === f.studentId) || { name: 'Unknown', classGrade: '-' };
+        csv += `"${f.id}","${f.paymentDate}","${s.name}","${s.classGrade}","${f.monthYear}","${f.amount}","${f.method}","${f.remarks || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Fee_History_SoumendraSirBiology_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    // BACKUP & RESTORE DATA
+    function exportDataBackup() {
+      const backupObj = {
+        students: students,
+        fees: fees,
+        exportedAt: new Date().toISOString(),
+        coaching: "Soumendra Sir Biology Classes"
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `SSBC_Database_Backup_${new Date().toISOString().slice(0, 10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast('Data Backup JSON downloaded!');
+    }
+
+    function importDataBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.students && data.fees) {
+            students = data.students;
+            fees = data.fees;
+            saveStudentsData();
+            saveFeesData();
+            renderDashboard();
+            renderStudents();
+            renderFeeStudentDropdown();
+            renderHistoryTable();
+            showToast('Data successfully restored!');
+          } else {
+            alert('Invalid Backup File Format.');
+          }
+        } catch (err) {
+          alert('Failed to parse backup file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // UTILITIES
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
